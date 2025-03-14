@@ -175,104 +175,50 @@ console.log(contents.join("\n\n"));
   },
 });
 
-
-///const transporter = nodemailer.createTransport({
-//  service: "gmail",
-//  auth: {
-//    user: "ragibhasan99@gmail.com",
- //   pass: "itmvmcvrvcmszdtl",
-  //},
-//});
-
-
-
-// Function to send emails    itmv mcvr vcms zdtl
-const sendEmails = async () => {
+// ✅ Function to send emails one by one
+const sendEmail = async () => {
   try {
-    const users = await User.find({ sendstatus: 0 });
+    const user = await User.findOne({ sendstatus: 0 }); // Get the next pending email
 
-    if (users.length === 0) {
-      console.log("No users with pending emails.");
+    if (!user) {
+      console.log("🎉 No pending emails.");
       return;
     }
 
-    let index = 0;
+    const firstName = user.name.split(" ")[0];
+    const contentIndex = Math.floor(Math.random() * contents.length);
 
-    const sendNextEmail = async () => {
-      if (index >= users.length) {
-        console.log("All emails sent.");
-        return;
-      }
-
-      const user = users[index];
-
-      const firstName = user.name.split(" ")[0];
-      const contentIndex = index % contents.length;
-
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: user.email,
-       // subject: `Dear ${user.name}, I want to work with you.`,
-        subject: `Dear ${firstName}, I want to work with you.`,
-        text: contents[contentIndex],
-      };
-
-      try {
-        await transporter.sendMail(mailOptions);
-        console.log(`Email sent to: ${user.email}`);
-
-        await User.updateOne({ _id: user._id }, { $set: { sendstatus: 1 } });
-        console.log(`Updated sendstatus for ${user.email}`);
-
-      } catch (error) {
-        console.error(`Error sending email to ${user.email}:`, error);
-      }
-
-      index++;
-     //setTimeout(sendNextEmail, 3600000); // Wait 2 minutes before 120000 next email
-
-     setTimeout(sendNextEmail, 120000);
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: `Dear ${firstName}, I want to work with you.`,
+      text: contents[contentIndex],
     };
 
-    sendNextEmail();
+    // Send email
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Email sent to: ${user.email}`);
+
+    // Mark email as sent
+    await User.updateOne({ _id: user._id }, { sendstatus: 1 });
+    console.log(`✅ Updated sendstatus for: ${user.email}`);
   } catch (error) {
-    console.error("Error processing emails:", error);
+    console.error("❌ Error sending email:", error);
   }
 };
 
+// ✅ Automatically trigger email sending
+const startEmailJob = () => {
+  console.log("🚀 Email job started...");
+  setInterval(sendEmail, 120000); // Send an email every 2 minutes
+};
 
+// ✅ Run job only in production (Vercel) environment
+if (process.env.NODE_ENV === "production") {
+  startEmailJob();
+}
 
-
-
-
-
-
-
-
-
-app.get('/hi', (req, res) => {
-
-   res.send("hello ragib");
-})
-
-
-
-
-const PORT = process.env.PORT || 5000
-
-
-
-
-app.listen(PORT,()=>{
-
-
-  console.log(`Server Is Running Port ${process.env.PORT}`)
-  sendEmails();
-  
-
-  //setInterval(() => {
-   // sendEmails();
-  //}, 120000);
-  
-  })
-
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
