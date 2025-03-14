@@ -207,18 +207,17 @@ const sendEmail = async () => {
   }
 };
 
-// ✅ Automatically trigger email sending
+// ✅ Start Automatic Email Process
 const startEmailJob = () => {
-  console.log("🚀 Email job started...");
-  setInterval(sendEmail, 120000); // Send an email every 2 minutes
+  console.log("🚀 Email job running...");
+  setInterval(sendEmail, 120000); // Every 2 minutes
 };
 
-// ✅ Run job only in production (Vercel) environment
 if (process.env.NODE_ENV === "production") {
-  startEmailJob();
+  startEmailJob(); // Only start job on Vercel
 }
 
-const PORT = process.env.PORT || 5000;
+// ✅ Keep Server Alive
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
