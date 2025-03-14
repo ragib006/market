@@ -211,9 +211,11 @@ const sendEmails = async () => {
 };
 
 // ✅ Automatically Send Emails on Server Start
-const startEmailJob = async () => {
-  await sendEmails();
-  console.log("📧 Automatic email job executed.");
+
+
+const startEmailJob = () => {
+  sendEmails(); // Send email immediately on startup
+  setInterval(sendEmails, 120000); // Send an email every 2 minutes (120,000 ms)
 };
 
 startEmailJob();
