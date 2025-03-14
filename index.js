@@ -217,6 +217,16 @@ if (process.env.NODE_ENV === "production") {
   startEmailJob(); // Only start job on Vercel
 }
 
+
+
+app.get("/test", async (req, res) => {
+  await sendEmail();
+  res.send("Email trigger attempt all!");
+});
+
+
+
+
 // ✅ Keep Server Alive
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
