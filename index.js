@@ -157,8 +157,13 @@ app.post("/adduser", async (req, res) => {
 
 
 
-const contents = ["Content 1", "Content 2", "Content 3"];
+//const contents = ["Content 1", "Content 2", "Content 3"];
 
+const contents = [
+  "Hello! We have an exciting opportunity for you.",
+  "Let's collaborate on something amazing!",
+  "I would love to discuss working together.",
+];
 
 
 console.log(contents.join("\n\n")); 
@@ -175,65 +180,40 @@ console.log(contents.join("\n\n"));
   },
 });
 
-// ✅ Function to send emails one by one
-const sendEmail = async () => {
-  try {
-    const user = await User.findOne({ sendstatus: 0 }); // Get the next pending email
 
+// ✅ Function to Send Emails
+const sendEmails = async () => {
+  try {
+    const user = await User.findOne({ sendstatus: 0 });
     if (!user) {
-      console.log("🎉 No pending emails.");
+      console.log("🎉 No users with pending emails.");
       return;
     }
 
     const firstName = user.name.split(" ")[0];
-    const contentIndex = Math.floor(Math.random() * contents.length);
+    const content = contents[Math.floor(Math.random() * contents.length)];
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: user.email,
-      subject: `Dear ${firstName}, I want to work with you.`,
-      text: contents[contentIndex],
+      subject: `Dear ${firstName}, Let's Connect!`,
+      text: content,
     };
 
-    // Send email
     await transporter.sendMail(mailOptions);
     console.log(`✅ Email sent to: ${user.email}`);
 
-    // Mark email as sent
-    await User.updateOne({ _id: user._id }, { sendstatus: 1 });
+    await User.updateOne({ _id: user._id }, { $set: { sendstatus: 1 } });
     console.log(`✅ Updated sendstatus for: ${user.email}`);
   } catch (error) {
     console.error("❌ Error sending email:", error);
   }
 };
 
-// ✅ Start Automatic Email Sending (Every 2 minutes)
-const startEmailJob = () => {
-  console.log("🚀 Email job started: Sending emails every 2 minutes...");
-  setInterval(sendEmail, 120000); // 120000 ms = 2 minutes
+// ✅ Automatically Send Emails on Server Start
+const startEmailJob = async () => {
+  await sendEmails();
+  console.log("📧 Automatic email job executed.");
 };
 
-// ✅ Test Route to Trigger an Email Manually
-app.get("/test-email", async (req, res) => {
-  await sendEmail();
-  res.send("📧 Email trigger attempt!");
-});
-
-// ✅ Root Route (for testing if server is live)
-app.get("/", (req, res) => {
-  res.send("🚀 Server is running and emails are sending!");
-});
-
-
-
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-
-  // Only start the email job when deployed to production (Vercel)
-  if (process.env.NODE_ENV === "production") {
-    startEmailJob();
-
-  }
-});
+startEmailJob();
