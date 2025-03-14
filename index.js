@@ -207,27 +207,33 @@ const sendEmail = async () => {
   }
 };
 
-// ✅ Start Automatic Email Process
+// ✅ Start Automatic Email Sending (Every 2 minutes)
 const startEmailJob = () => {
-  console.log("🚀 Email job running...");
-  setInterval(sendEmail, 120000); // Every 2 minutes
+  console.log("🚀 Email job started: Sending emails every 2 minutes...");
+  setInterval(sendEmail, 120000); // 120000 ms = 2 minutes
 };
 
-if (process.env.NODE_ENV === "production") {
-  startEmailJob(); // Only start job on Vercel
-}
-
-
-
-app.get("/test", async (req, res) => {
+// ✅ Test Route to Trigger an Email Manually
+app.get("/test-email", async (req, res) => {
   await sendEmail();
-  res.send("Email trigger attempt all!");
+  res.send("📧 Email trigger attempt!");
+});
+
+// ✅ Root Route (for testing if server is live)
+app.get("/", (req, res) => {
+  res.send("🚀 Server is running and emails are sending!");
 });
 
 
 
 
-// ✅ Keep Server Alive
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+
+  // Only start the email job when deployed to production (Vercel)
+  if (process.env.NODE_ENV === "production") {
+    startEmailJob();
+
+  }
 });
