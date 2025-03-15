@@ -14,9 +14,8 @@
     ],
     "crons": [
       {
-        "path": "/api/send-email",  // The path to your serverless function
-        "schedule": "*/2 * * * *"    // Every 2 minutes
+        "path": "/api/send-email", 
+        "schedule": "*/2 * * * *"   
       }
     ]
   }
-  
