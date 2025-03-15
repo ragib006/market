@@ -223,12 +223,14 @@ console.log(contents.join("\n\n"));
 
 
 
-const sendEmails = async () => {
+// ✅ Function to Send One Email at a Time
+export default async function handler(req, res) {
   try {
     const user = await User.findOne({ sendstatus: 0 });
+
     if (!user) {
       console.log("🎉 No users with pending emails.");
-      return;
+      return res.status(200).send("No pending emails.");
     }
 
     const firstName = user.name.split(" ")[0];
@@ -241,28 +243,13 @@ const sendEmails = async () => {
       text: content,
     };
 
-    // Send email
     await transporter.sendMail(mailOptions);
-    console.log(`✅ Email sent to: ${user.email}`);
+    await User.updateOne({ _id: user._id }, { sendstatus: 1 });
 
-    // Update sendstatus to 1 (email sent)
-    await User.updateOne({ _id: user._id }, { $set: { sendstatus: 1 } });
-    console.log(`✅ Updated sendstatus for: ${user.email}`);
+    console.log(`✅ Email sent to: ${user.email}`);
+    return res.status(200).send(`Email sent to: ${user.email}`);
   } catch (error) {
     console.error("❌ Error sending email:", error);
+    return res.status(500).send("Error sending email.");
   }
-};
-
-// ✅ Automatically Send Emails Every 2 Minutes
-setInterval(() => {
-  sendEmails();
-}, 120000); // 120,000 ms = 2 minutes
-
-console.log("✅ Email scheduler started!");
-
-// Prevent Vercel from shutting down the process immediately
-setInterval(() => {
-  console.log("Keeping process alive...");
-}, 60000); // Print message every 1 minute
-
-
+}
