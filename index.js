@@ -182,6 +182,47 @@ console.log(contents.join("\n\n"));
 
 
 // ✅ Function to Send Emails
+//const sendEmails = async () => {
+  //try {
+   // const user = await User.findOne({ sendstatus: 0 });
+    //if (!user) {
+    //  console.log("🎉 No users with pending emails.");
+   //   return;
+   // }
+
+   // const firstName = user.name.split(" ")[0];
+   // const content = contents[Math.floor(Math.random() * contents.length)];
+
+   // const mailOptions = {
+    //  from: process.env.EMAIL_USER,
+   //   to: user.email,
+    //  subject: `Dear ${firstName}, Let's Connect!`,
+    //  text: content,
+   // };
+
+   // await transporter.sendMail(mailOptions);
+   // console.log(`✅ Email sent to: ${user.email}`);
+
+   // await User.updateOne({ _id: user._id }, { $set: { sendstatus: 1 } });
+    //console.log(`✅ Updated sendstatus for: ${user.email}`);
+  //} catch (error) {
+  //  console.error("❌ Error sending email:", error);
+  //}
+//};
+
+// ✅ Automatically Send Emails on Server Start
+
+
+//const startEmailJob = () => {
+//  sendEmails(); // Send email immediately on startup
+//  setInterval(sendEmails, 120000); // Send an email every 2 minutes (120,000 ms)
+//};
+
+//startEmailJob();
+
+
+
+
 const sendEmails = async () => {
   try {
     const user = await User.findOne({ sendstatus: 0 });
@@ -200,9 +241,11 @@ const sendEmails = async () => {
       text: content,
     };
 
+    // Send email
     await transporter.sendMail(mailOptions);
     console.log(`✅ Email sent to: ${user.email}`);
 
+    // Update sendstatus to 1 (email sent)
     await User.updateOne({ _id: user._id }, { $set: { sendstatus: 1 } });
     console.log(`✅ Updated sendstatus for: ${user.email}`);
   } catch (error) {
@@ -210,12 +253,16 @@ const sendEmails = async () => {
   }
 };
 
-// ✅ Automatically Send Emails on Server Start
+// ✅ Automatically Send Emails Every 2 Minutes
+setInterval(() => {
+  sendEmails();
+}, 120000); // 120,000 ms = 2 minutes
+
+console.log("✅ Email scheduler started!");
+
+// Prevent Vercel from shutting down the process immediately
+setInterval(() => {
+  console.log("Keeping process alive...");
+}, 60000); // Print message every 1 minute
 
 
-const startEmailJob = () => {
-  sendEmails(); // Send email immediately on startup
-  setInterval(sendEmails, 120000); // Send an email every 2 minutes (120,000 ms)
-};
-
-startEmailJob();
